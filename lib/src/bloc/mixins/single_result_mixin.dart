@@ -26,10 +26,8 @@ mixin SingleResultMixin<State, SR> on BlocBase<State>
   }
 
   @override
-  Future<void> close() {
-    _srController.close();
-    return super.close();
-  }
+  Future<void> close() =>
+      _srController.close().then((_) => super.close());
 }
 
 /// Extending Observer to support logging SingleResult events

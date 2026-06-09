@@ -33,8 +33,8 @@ mixin class ProgressStreamMixin {
   /// Decrements the internal progress counter. The overlay is only hidden
   /// when the counter reaches zero.
   Future<void> stopProgress({BaseProgressState? state}) async {
+    if (_progressCount == 0) return;
     _progressCount--;
-    if (_progressCount < 0) _progressCount = 0;
 
     if (_progressCount == 0) {
       // Small delay to ensure the UI has time to register the 'show' state
