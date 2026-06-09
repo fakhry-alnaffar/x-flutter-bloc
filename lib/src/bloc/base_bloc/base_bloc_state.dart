@@ -3,14 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:onix_flutter_bloc/src/bloc/base_bloc/base_bloc.dart';
 import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
+import 'package:onix_flutter_bloc/src/bloc/mixins/base_ui_state_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/stream_listener.dart';
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
 
+/// Base class for all BLoC-based states.
+///
+/// Handles BLoC creation, lifecycle, and auxiliary streams (failure, progress, single results).
 abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
         W extends StatefulWidget> extends State<W>
-    with BlocBuildersMixin<B, S, SR> {
-  bool _listenersAttached = false;
+    with BlocBuildersMixin<B, S, SR>, BaseUiStateMixin<W, SR> {
   bool lazyBloc = false;
   B? _bloc;
 
@@ -26,12 +28,14 @@ abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
       lazy: lazyBloc,
       child: Builder(
         builder: (context) {
-          if (!_listenersAttached) {
-            _listenersAttached = true;
-            _attachListeners(context);
-          }
           initParams(context);
-          return buildWidget(context);
+          final bloc = _bloc ?? blocOf(context);
+          return buildUiStreams(
+            failureStream: bloc.failureStream,
+            singleResults: bloc.singleResults,
+            progressStream: bloc.progressStream,
+            child: buildWidget(context),
+          );
         },
       ),
     );
@@ -39,19 +43,20 @@ abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
 
   @override
   void dispose() {
-    if (_bloc != null) {
-      _bloc?.dispose();
-    }
+    // Note: The Bloc is closed by BlocProvider
     if (context.mounted) {
       context.loaderOverlay.hide();
     }
     super.dispose();
   }
 
+  /// Shortcut to get the BLoC from the context.
   B blocOf(BuildContext context) => context.read<B>();
 
+  /// Factory method to create the BLoC.
   B createBloc();
 
+  /// Observes SingleResults and triggers [onSR].
   Widget srObserver({
     required BuildContext context,
     required Widget child,
@@ -59,48 +64,18 @@ abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
   }) {
     return StreamListener<SR>(
       stream: (_bloc ?? blocOf(context)).singleResults,
-      onData: (data) {
-        onSR(context, data);
-      },
+      onData: (data) => onSR(context, data),
       child: child,
     );
   }
 
+  /// Called after the BLoC is created.
   void onBlocCreated(BuildContext context, B bloc) {}
 
-  void onFailure(BuildContext context, Failure failure) {}
-
-  void onSR(BuildContext context, SR sr) {}
-
-  void onProgress(BuildContext context, BaseProgressState progress) {
-    if (progress is DefaultProgressState) {
-      if (progress.showProgress) {
-        context.loaderOverlay.show();
-      } else {
-        context.loaderOverlay.hide();
-      }
-    }
-  }
-
+  /// Initialization of parameters before [buildWidget].
   // ignore: no-empty-block
   void initParams(BuildContext context) {}
 
+  /// Main UI builder method.
   Widget buildWidget(BuildContext context);
-
-  void _attachListeners(BuildContext context) {
-    _bloc?.failureStream.listen((failure) {
-      if (!context.mounted) return;
-      onFailure(context, failure);
-    });
-
-    _bloc?.singleResults.listen((sr) {
-      if (!context.mounted) return;
-      onSR(context, sr);
-    });
-
-    _bloc?.progressStream.listen((progress) {
-      if (!context.mounted) return;
-      onProgress(context, progress);
-    });
-  }
 }

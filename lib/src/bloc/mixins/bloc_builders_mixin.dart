@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
 
+/// Mixin to provide standard Bloc builder widgets.
 mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
+  /// A wrapper for [BlocConsumer].
   Widget blocConsumer({
     required StateListener<S> builder,
     required ListenDelegate<S> listener,
@@ -17,6 +19,7 @@ mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
     );
   }
 
+  /// A wrapper for [BlocBuilder].
   Widget blocBuilder({
     required BlocWidgetBuilder<S> builder,
     BlocBuilderCondition<S>? buildWhen,
@@ -24,6 +27,7 @@ mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
     return BlocBuilder<B, S>(builder: builder, buildWhen: buildWhen);
   }
 
+  /// A wrapper for [BlocListener].
   Widget blocListener({
     required ListenDelegate<S> listener,
     Widget? child,

@@ -3,14 +3,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:onix_flutter_bloc/src/bloc/base_cubit/base_cubit.dart';
 import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
+import 'package:onix_flutter_bloc/src/bloc/mixins/base_ui_state_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/stream_listener.dart';
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
 
+/// Base class for all Cubit-based states.
+///
+/// Handles Cubit creation, lifecycle, and auxiliary streams (failure, progress, single results).
 abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
         W extends StatefulWidget> extends State<W>
-    with BlocBuildersMixin<C, S, SR> {
-  bool _listenersAttached = false;
+    with BlocBuildersMixin<C, S, SR>, BaseUiStateMixin<W, SR> {
   bool lazyCubit = false;
   C? _cubit;
 
@@ -19,19 +21,21 @@ abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
     return BlocProvider<C>(
       create: (context) {
         final cubit = createCubit();
-        onCubitCreated(context, cubit);
         _cubit = cubit;
+        onCubitCreated(context, cubit);
         return cubit;
       },
       lazy: lazyCubit,
       child: Builder(
         builder: (context) {
-          if (!_listenersAttached) {
-            _listenersAttached = true;
-            _attachListeners(context);
-          }
           initParams(context);
-          return buildWidget(context);
+          final cubit = _cubit ?? cubitOf(context);
+          return buildUiStreams(
+            failureStream: cubit.failureStream,
+            singleResults: cubit.singleResults,
+            progressStream: cubit.progressStream,
+            child: buildWidget(context),
+          );
         },
       ),
     );
@@ -39,19 +43,20 @@ abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
 
   @override
   void dispose() {
-    if (_cubit != null) {
-      _cubit?.dispose();
-    }
+    // Note: The Cubit is closed by BlocProvider
     if (context.mounted) {
       context.loaderOverlay.hide();
     }
     super.dispose();
   }
 
+  /// Shortcut to get the Cubit from the context.
   C cubitOf(BuildContext context) => context.read<C>();
 
+  /// Factory method to create the Cubit.
   C createCubit();
 
+  /// Observes SingleResults and triggers [onSR].
   Widget srObserver({
     required BuildContext context,
     required Widget child,
@@ -59,48 +64,18 @@ abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
   }) {
     return StreamListener<SR>(
       stream: (_cubit ?? cubitOf(context)).singleResults,
-      onData: (data) {
-        onSR(context, data);
-      },
+      onData: (data) => onSR(context, data),
       child: child,
     );
   }
 
+  /// Called after the Cubit is created.
   void onCubitCreated(BuildContext context, C cubit) {}
 
-  void onFailure(BuildContext context, Failure failure) {}
-
-  void onSR(BuildContext context, SR sr) {}
-
-  void onProgress(BuildContext context, BaseProgressState progress) {
-    if (progress is DefaultProgressState) {
-      if (progress.showProgress) {
-        context.loaderOverlay.show();
-      } else {
-        context.loaderOverlay.hide();
-      }
-    }
-  }
-
-  void _attachListeners(BuildContext context) {
-    _cubit?.failureStream.listen((failure) {
-      if (!context.mounted) return;
-      onFailure(context, failure);
-    });
-
-    _cubit?.singleResults.listen((sr) {
-      if (!context.mounted) return;
-      onSR(context, sr);
-    });
-
-    _cubit?.progressStream.listen((progress) {
-      if (!context.mounted) return;
-      onProgress(context, progress);
-    });
-  }
-
-// ignore: no-empty-block
+  /// Initialization of parameters before [buildWidget].
+  // ignore: no-empty-block
   void initParams(BuildContext context) {}
 
+  /// Main UI builder method.
   Widget buildWidget(BuildContext context);
 }

@@ -37,8 +37,10 @@ class _StreamListenerState<T> extends State<StreamListener<T>> {
   @override
   void didUpdateWidget(covariant StreamListener<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    _streamSubs?.cancel();
-    listen();
+    if (oldWidget.stream != widget.stream) {
+      _streamSubs?.cancel();
+      listen();
+    }
   }
 
   @override

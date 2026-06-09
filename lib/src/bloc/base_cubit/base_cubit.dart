@@ -1,17 +1,94 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onix_flutter_bloc/src/bloc/base_cubit/sr_cubit_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/mixins/failure_stream_mixin.dart';
 import 'package:onix_flutter_bloc/src/bloc/mixins/progress_stream_mixin.dart';
+import 'package:onix_flutter_bloc/src/bloc/mixins/single_result_mixin.dart';
+import 'package:onix_flutter_core/onix_flutter_core.dart';
+import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
 
+/// BaseCubit - Production ready state manager
+/// - Safe from shadowing issues
+/// - Dart 3 sealed response handling
+/// - Clean progress & failure lifecycle
 abstract class BaseCubit<State, SR> extends Cubit<State>
-    with
-        SingleResultCubitMixin<State, SR>,
-        ProgressStreamMixin,
-        FailureStreamMixin {
+    with SingleResultMixin<State, SR>, ProgressStreamMixin, FailureStreamMixin {
   BaseCubit(super.initialState);
 
-  void dispose() {
+  /// Unified failure handler (safe + clean)
+  void _emitFailure(
+    Failure failure, {
+    void Function(Failure)? onError,
+  }) {
+    if (onError != null) {
+      onError(failure);
+    } else {
+      onFailure(failure);
+    }
+  }
+
+  /// Main operation handler (safe + production ready)
+  Future<DataResponse<T>> performOperation<T>({
+    required Future<DataResponse<T>> Function() operation,
+    required void Function(T data) onSuccess,
+    void Function(Failure failure)? onError,
+    bool enableProgress = true,
+  }) async {
+    try {
+      if (enableProgress) {
+        startProgress();
+      }
+
+      final response = await operation();
+
+      switch (response) {
+        case DataResponseSuccess<T>(data: final data):
+          onSuccess(data);
+        case CanceledRequest<T>():
+          // intentionally ignored
+          break;
+        case ApiError<T>() ||
+              NoInternetConnection<T>() ||
+              Unauthorized<T>() ||
+              TooManyRequests<T>() ||
+              UndefinedError<T>():
+          final failure = mapResponseToFailure(response);
+          _emitFailure(failure, onError: onError);
+      }
+
+      return response;
+    } finally {
+      if (enableProgress) {
+        await stopProgress();
+      }
+    }
+  }
+
+  /// Maps [DataResponse] errors to [Failure] objects.
+  /// Override this to customize error mapping across the Cubit.
+  @protected
+  Failure mapResponseToFailure<T>(DataResponse<T> response) {
+    return switch (response) {
+      ApiError<T>(error: final error, statusCode: final code) =>
+        ApiResponseFailure(
+          statusCode: code ?? 0,
+          message: error.toString(),
+        ),
+      NoInternetConnection<T>() => const ConnectionFailure(),
+      Unauthorized<T>() => const ApiUnauthorizedFailure(),
+      TooManyRequests<T>() => const ApiTooManyRequestsFailure(),
+      UndefinedError<T>(errorObject: final error, statusCode: final code) =>
+        ApiUndefinedFailure(
+          message: error.toString(),
+          statusCode: code,
+        ),
+      _ => const ApiUnknownFailure(),
+    };
+  }
+
+  @override
+  Future<void> close() {
     closeProgressStream();
     closeFailureStream();
+    return super.close();
   }
 }
