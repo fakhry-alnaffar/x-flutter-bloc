@@ -10,6 +10,7 @@ export 'src/bloc/base_cubit/base_cubit_state.dart' show BaseCubitState;
 export 'src/bloc/mixins/single_result_mixin.dart' show SingleResultMixin, SrBlocObserver;
 export 'src/bloc/mixins/progress_stream_mixin.dart' show ProgressStreamMixin;
 export 'src/bloc/mixins/failure_stream_mixin.dart' show FailureStreamMixin;
+export 'src/bloc/mixins/operation_orchestrator.dart' show OperationOrchestrator;
 export 'src/bloc/mixins/base_ui_state_mixin.dart' show BaseUiStateMixin;
 
 // Widgets
