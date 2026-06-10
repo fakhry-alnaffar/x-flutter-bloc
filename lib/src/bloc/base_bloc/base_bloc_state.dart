@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:onix_flutter_bloc/src/bloc/base_bloc/base_bloc.dart';
-import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/base_ui_state_mixin.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
-import 'package:onix_flutter_bloc/src/bloc/stream_listener.dart';
+import 'package:x_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
 
-/// Base class for all BLoC-based states.
+/// Base class for all BLoC-based states using [StatefulWidget].
 ///
-/// Handles BLoC creation, lifecycle, and auxiliary streams (failure, progress, single results).
-abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
+/// Handles BLoC creation, lifecycle, and automatic stream orchestration.
+abstract class BaseBlocState<S, B extends IBaseBloc<S, SR>, SR,
         W extends StatefulWidget> extends State<W>
     with BlocBuildersMixin<B, S, SR>, BaseUiStateMixin<W, SR> {
+  /// Whether the BLoC should be created lazily.
   bool lazyBloc = false;
-  B? _bloc;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<B>(
       create: (context) {
         final bloc = createBloc();
-        _bloc = bloc;
         onBlocCreated(context, bloc);
         return bloc;
       },
@@ -29,7 +25,7 @@ abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
       child: Builder(
         builder: (context) {
           initParams(context);
-          final bloc = _bloc ?? blocOf(context);
+          final bloc = blocOf(context);
           return buildUiStreams(
             failureStream: bloc.failureStream,
             singleResults: bloc.singleResults,
@@ -43,39 +39,45 @@ abstract class BaseState<S, B extends BaseBloc<dynamic, S, SR>, SR,
 
   @override
   void dispose() {
-    // Note: The Bloc is closed by BlocProvider
+    // Ensure any active overlay is hidden on dispose
     if (context.mounted) {
       context.loaderOverlay.hide();
     }
     super.dispose();
   }
 
-  /// Shortcut to get the BLoC from the context.
+  /// Shortcut to retrieve the BLoC from the current context.
   B blocOf(BuildContext context) => context.read<B>();
 
-  /// Factory method to create the BLoC.
+  /// Factory method to create the BLoC instance.
   B createBloc();
 
-  /// Observes SingleResults and triggers [onSR].
+  /// Callback triggered immediately after the BLoC is created.
+  void onBlocCreated(BuildContext context, B bloc) {}
+
+  /// Observes SingleResults manually for a specific widget subtree.
+  ///
+  /// Useful when you need to listen to events from a nested BLoC or
+  /// handle events at a specific point in the widget tree.
   Widget srObserver({
     required BuildContext context,
     required Widget child,
     required SingleResultListener<SR> onSR,
+    B? bloc,
   }) {
     return StreamListener<SR>(
-      stream: (_bloc ?? blocOf(context)).singleResults,
+      stream: (bloc ?? blocOf(context)).singleResults,
       onData: (data) => onSR(context, data),
       child: child,
     );
   }
 
-  /// Called after the BLoC is created.
-  void onBlocCreated(BuildContext context, B bloc) {}
-
-  /// Initialization of parameters before [buildWidget].
-  // ignore: no-empty-block
+  /// Hook for initializing parameters or arguments before [buildWidget].
   void initParams(BuildContext context) {}
 
-  /// Main UI builder method.
+  /// The main UI builder.
+  ///
+  /// Senior Recommendation: Use [BlocSelector] or [context.select] inside this method
+  /// for fine-grained rebuilds instead of relying on the whole widget rebuilding.
   Widget buildWidget(BuildContext context);
 }

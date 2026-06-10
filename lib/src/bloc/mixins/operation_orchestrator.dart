@@ -1,16 +1,15 @@
 import 'package:flutter/foundation.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/failure_stream_mixin.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/progress_stream_mixin.dart';
-import 'package:onix_flutter_core/onix_flutter_core.dart';
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
+import 'package:x_flutter_bloc/src/bloc/mixins/failure_stream_mixin.dart';
+import 'package:x_flutter_bloc/src/bloc/mixins/progress_stream_mixin.dart';
+import 'package:x_flutter_core/x_flutter_core.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
 /// Mixin that orchestrates async operations with progress and failure handling.
 ///
 /// Designed to be used with [ProgressStreamMixin] and [FailureStreamMixin].
 mixin OperationOrchestrator on ProgressStreamMixin, FailureStreamMixin {
-  /// Unified failure handler (safe + clean)
   void _emitFailure(Failure failure, {void Function(Failure)? onError}) {
-    (onError ?? onFailure)(failure);
+    (onError ?? emitFailure)(failure);
   }
 
   /// Processes a [DataResponse] and automatically handles progress and failure streams.
@@ -38,24 +37,37 @@ mixin OperationOrchestrator on ProgressStreamMixin, FailureStreamMixin {
         case DataResponseSuccess<T>(data: final data):
           onSuccess(data);
         case CanceledRequest<T>():
-          // intentionally ignored
-          break;
-        case ApiError<T>() ||
-            NoInternetConnection<T>() ||
-            Unauthorized<T>() ||
-            TooManyRequests<T>() ||
-            UndefinedError<T>():
-          final failure = mapResponseToFailure(response);
-          _emitFailure(failure, onError: onError);
+          break; // intentionally ignored
+        default:
+          // Covers ApiError, NoInternetConnection, Unauthorized, TooManyRequests,
+          // UndefinedError, and any future DataResponse variants.
+          _emitFailure(mapResponseToFailure(response), onError: onError);
       }
 
       return response;
+    } catch (e) {
+      _emitFailure(const ApiUnknownFailure(), onError: onError);
+      rethrow;
     } finally {
       if (enableProgress) {
         await stopProgress();
       }
     }
   }
+
+  /// Alias for [performOperation] to align with Clean Architecture naming conventions.
+  Future<DataResponse<T>> performSafeOperation<T>({
+    required Future<DataResponse<T>> Function() operation,
+    required void Function(T data) onSuccess,
+    void Function(Failure failure)? onError,
+    bool enableProgress = true,
+  }) =>
+      performOperation(
+        operation: operation,
+        onSuccess: onSuccess,
+        onError: onError,
+        enableProgress: enableProgress,
+      );
 
   /// Maps [DataResponse] errors to [Failure] objects.
   /// Override this to customize error mapping across the Bloc/Cubit.

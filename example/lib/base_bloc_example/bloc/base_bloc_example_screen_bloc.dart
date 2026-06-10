@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:onix_flutter_bloc/onix_flutter_bloc.dart';
-import 'package:onix_flutter_core/onix_flutter_core.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
+import 'package:x_flutter_core/x_flutter_core.dart';
 
 part 'base_bloc_example_screen_event.dart';
 part 'base_bloc_example_screen_sr.dart';
@@ -10,9 +11,10 @@ class BaseBlocExampleScreenBloc extends BaseBloc<BaseBlocExampleScreenEvent,
     BaseBlocExampleScreenState, BaseBlocExampleScreenSR> {
   BaseBlocExampleScreenBloc() : super(BaseBlocExampleScreenInitial()) {
     on<BaseBlocExampleScreenEventOnIncrement>((event, emit) async {
-      int counter = state is BaseBlocExampleScreenData
-          ? (state as BaseBlocExampleScreenData).counter
-          : 0;
+      final counter = switch (state) {
+        BaseBlocExampleScreenData(:final counter) => counter,
+        _ => 0,
+      };
 
       // Simulation of an async operation using performOperation
       await performOperation(

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
+import 'package:x_flutter_bloc/src/bloc/bloc_typedefs.dart';
 
 /// Mixin for extending the block's capabilities to support SingleResult -
 /// events that need to be rendered 1 time
@@ -12,8 +12,7 @@ import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
 /// - Some interaction with the animation
 mixin SingleResultMixin<State, SR> on BlocBase<State>
     implements SingleResultProvider<SR>, SingleResultEmitter<SR> {
-  @protected
-  final StreamController<SR> _srController = StreamController.broadcast();
+  final StreamController<SR> _srController = StreamController.broadcast(sync: true);
 
   @override
   Stream<SR> get singleResults => _srController.stream;
@@ -23,6 +22,14 @@ mixin SingleResultMixin<State, SR> on BlocBase<State>
     final observer = Bloc.observer;
     if (observer is SrBlocObserver) observer.onSr(this, sr);
     if (!_srController.isClosed) _srController.add(sr);
+  }
+
+  /// Closes the single result stream controller.
+  @protected
+  void closeSingleResultStream() {
+    if (!_srController.isClosed) {
+      _srController.close();
+    }
   }
 
   @override

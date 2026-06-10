@@ -1,10 +1,13 @@
-library onix_flutter_bloc;
+library;
 
 // BLoC & Cubit
 export 'src/bloc/base_bloc/base_bloc.dart' show BaseBloc;
-export 'src/bloc/base_bloc/base_bloc_state.dart' show BaseState;
+export 'src/bloc/base_bloc/base_bloc_state.dart' show BaseBlocState;
 export 'src/bloc/base_cubit/base_cubit.dart' show BaseCubit;
 export 'src/bloc/base_cubit/base_cubit_state.dart' show BaseCubitState;
+
+// Screens
+export 'src/ui/base_stateless_screen.dart';
 
 // Mixins
 export 'src/bloc/mixins/single_result_mixin.dart' show SingleResultMixin, SrBlocObserver;

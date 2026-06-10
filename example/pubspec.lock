@@ -241,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  equatable:
+    dependency: "direct main"
+    description:
+      name: equatable
+      sha256: "3e0141505477fd8ad55d6eb4e7776d3fe8430be8e497ccb1521370c3f21a3e2b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.8"
   fake_async:
     dependency: transitive
     description:
@@ -302,6 +310,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
+  flutter_screenutil:
+    dependency: "direct main"
+    description:
+      name: flutter_screenutil
+      sha256: "8239210dd68bee6b0577aa4a090890342d04a136ce1c81f98ee513fc0ce891de"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.9.3"
   flutter_secure_storage:
     dependency: transitive
     description:
@@ -592,27 +608,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
-  onix_flutter_bloc:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "1.0.0"
-  onix_flutter_core:
-    dependency: "direct main"
-    description:
-      path: "../../onix-flutter-core"
-      relative: true
-    source: path
-    version: "1.0.0"
-  onix_flutter_core_models:
-    dependency: "direct main"
-    description:
-      path: "../../onix-flutter-core-models"
-      relative: true
-    source: path
-    version: "0.0.3"
   package_config:
     dependency: transitive
     description:
@@ -970,6 +965,29 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.0"
+  x_flutter_bloc:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "1.0.0"
+  x_flutter_core:
+    dependency: "direct main"
+    description:
+      name: x_flutter_core
+      sha256: "6d56fd7250657ba75b8d03057de7ae67ef747ee972fc98c9f49bf8957402fc71"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  x_flutter_core_models:
+    dependency: "direct main"
+    description:
+      name: x_flutter_core_models
+      sha256: "4648e0d32a51396216338b9c180ab529fdf5c61255749921323e53ec665957e4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.4"
   xdg_directories:
     dependency: transitive
     description:

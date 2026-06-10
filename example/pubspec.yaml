@@ -17,19 +17,20 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_bloc: ^9.1.1
   dio: ^5.9.2
-  onix_flutter_bloc:
+  equatable: ^2.0.5
+  flutter_screenutil: ^5.9.3
+  x_flutter_bloc:
     path: ../
   loader_overlay: ^5.0.0
-  onix_flutter_core:
-    path: ../../onix-flutter-core
-  onix_flutter_core_models:
-    path: ../../onix-flutter-core-models
+  x_flutter_core_models: ^0.1.4
+
+  x_flutter_core: ^1.0.1
 
 dependency_overrides:
-  onix_flutter_core_models:
-    path: ../../onix-flutter-core-models
-  onix_flutter_core:
-    path: ../../onix-flutter-core
+  x_flutter_core_models: ^0.1.4
+
+  x_flutter_core: ^1.0.1
+
 
 dev_dependencies:
   flutter_test:

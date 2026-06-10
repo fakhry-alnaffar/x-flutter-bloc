@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:onix_flutter_bloc/src/bloc/base_cubit/base_cubit.dart';
-import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/base_ui_state_mixin.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
-import 'package:onix_flutter_bloc/src/bloc/stream_listener.dart';
+import 'package:x_flutter_bloc/src/bloc/mixins/bloc_builders_mixin.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
 
-/// Base class for all Cubit-based states.
+/// Base class for all Cubit-based states using [StatefulWidget].
 ///
-/// Handles Cubit creation, lifecycle, and auxiliary streams (failure, progress, single results).
-abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
+/// Provides integrated support for Loading overlays, Error handling, and Single Results.
+abstract class BaseCubitState<S, C extends IBaseBloc<S, SR>, SR,
         W extends StatefulWidget> extends State<W>
     with BlocBuildersMixin<C, S, SR>, BaseUiStateMixin<W, SR> {
+  /// Whether the Cubit should be created lazily.
   bool lazyCubit = false;
-  C? _cubit;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<C>(
       create: (context) {
         final cubit = createCubit();
-        _cubit = cubit;
         onCubitCreated(context, cubit);
         return cubit;
       },
@@ -29,7 +25,7 @@ abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
       child: Builder(
         builder: (context) {
           initParams(context);
-          final cubit = _cubit ?? cubitOf(context);
+          final cubit = cubitOf(context);
           return buildUiStreams(
             failureStream: cubit.failureStream,
             singleResults: cubit.singleResults,
@@ -43,39 +39,41 @@ abstract class BaseCubitState<S, C extends BaseCubit<S, SR>, SR,
 
   @override
   void dispose() {
-    // Note: The Cubit is closed by BlocProvider
     if (context.mounted) {
       context.loaderOverlay.hide();
     }
     super.dispose();
   }
 
-  /// Shortcut to get the Cubit from the context.
+  /// Shortcut to retrieve the Cubit from the current context.
   C cubitOf(BuildContext context) => context.read<C>();
 
-  /// Factory method to create the Cubit.
+  /// Factory method to create the Cubit instance.
   C createCubit();
 
-  /// Observes SingleResults and triggers [onSR].
+  /// Callback triggered immediately after the Cubit is created.
+  void onCubitCreated(BuildContext context, C cubit) {}
+
+  /// Observes SingleResults manually for a specific widget subtree.
+  ///
+  /// Useful when you need to listen to events from a nested Cubit or
+  /// handle events at a specific point in the widget tree.
   Widget srObserver({
     required BuildContext context,
     required Widget child,
     required SingleResultListener<SR> onSR,
+    C? cubit,
   }) {
     return StreamListener<SR>(
-      stream: (_cubit ?? cubitOf(context)).singleResults,
+      stream: (cubit ?? cubitOf(context)).singleResults,
       onData: (data) => onSR(context, data),
       child: child,
     );
   }
 
-  /// Called after the Cubit is created.
-  void onCubitCreated(BuildContext context, C cubit) {}
-
-  /// Initialization of parameters before [buildWidget].
-  // ignore: no-empty-block
+  /// Hook for initializing parameters or arguments before [buildWidget].
   void initParams(BuildContext context) {}
 
-  /// Main UI builder method.
+  /// The main UI builder.
   Widget buildWidget(BuildContext context);
 }

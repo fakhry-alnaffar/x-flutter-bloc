@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onix_flutter_bloc/src/bloc/mixins/single_result_mixin.dart';
+import 'package:x_flutter_bloc/src/bloc/mixins/single_result_mixin.dart';
 
 /// Standard BlocObserver for the application.
 ///

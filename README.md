@@ -1,15 +1,21 @@
-# Onix Flutter BLoC
+# X Flutter Bloc 🚀
 
-A production-grade state management layer built on top of `flutter_bloc`. Designed for scalability, clean architecture, and seamless integration with the Onix ecosystem.
+**X Flutter Bloc** is a modern, enterprise-grade state management framework built on top of `flutter_bloc`. It is designed to eliminate boilerplate, enforce Clean Architecture, and provide ruthless performance optimization out of the box.
 
-## 🚀 Key Features
+Designed specifically for the **X Flutter Core** ecosystem, it seamlessly integrates network responses, global loading overlays, and centralized error handling.
 
-*   **Modern Bloc & Cubit**: Fully modernized for Dart 3.12+ and Flutter 3.44+.
-*   **Single Results (SR)**: Handle one-time events (Navigation, Toasts, Dialogs) without polluting the state.
-*   **Integrated Loading & Errors**: Built-in support for progress overlays and failure streams.
-*   **DataResponse Integration**: Automatic handling of `onix_flutter_core` sealed `DataResponse` model.
-*   **Memory Safe**: Declarative stream listening to prevent leaks.
-*   **Senior-Level Architecture**: Minimal boilerplate, high maintainability.
+---
+
+## ✨ Key Features
+
+- 🏗️ **Architectural Enforcement**: Strict separation of concerns using `BaseBloc` and `BaseCubit`.
+- ⚡ **Ruthless Performance**: `BaseStatelessScreen` architecture designed for **Atomic Rebuilds**.
+- 🔄 **Operation Orchestration**: Handle API calls with `performSafeOperation` — automatic loading, error mapping, and data success handling.
+- 🛡️ **Type-Safe UI Streams**: Built-in protocols for `FailureStream`, `ProgressStream`, and `SingleResults`.
+- ⏳ **Anti-Flicker Loading**: Intelligent reference-counted progress management with a 50ms anti-flicker delay.
+- 📱 **Pixel Perfect**: Built-in integration with `flutter_screenutil` for adaptive UI.
+
+---
 
 ## 📦 Installation
 
@@ -17,90 +23,90 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  onix_flutter_bloc:
+  x_flutter_bloc:
     git:
-      url: https://github.com/OnixFlutterTeam/onix-flutter-bloc.git
-      ref: main
+      url: https://github.com/fakhry-alnaffar/x-flutter-bloc.git
 ```
 
-## 🛠 Usage
+---
 
-### 1. Create your BLoC
+## 🏛️ Core Concepts
 
-Extend `BaseBloc` (or `BaseCubit`) and define your Event, State, and Single Result (SR) types.
+### 1. The BLoC Layer (`BaseBloc` / `BaseCubit`)
+Forget manual `try-catch` and loading flags. Use `performSafeOperation`.
 
 ```dart
-class MyBloc extends BaseBloc<MyEvent, MyState, MySR> {
-  MyBloc() : super(const MyState.initial());
+class LoginBloc extends BaseBloc<LoginEvent, LoginState, LoginSR> {
+  final LoginUseCase _loginUseCase;
 
-  Future<void> _onFetch(FetchEvent event, Emitter<MyState> emit) async {
-    await performOperation(
-      operation: () => _repository.getData(),
-      onSuccess: (data) => emit(MyState.success(data)),
-      // enableProgress: true, // Default
+  LoginBloc(this._loginUseCase) : super(const LoginInitial());
+
+  Future<void> _onLogin(LoginSubmitted event, Emitter emit) async {
+    await performSafeOperation(
+      operation: () => _loginUseCase(event.username, event.password),
+      onSuccess: (user) {
+        emit(LoginSuccess(user));
+        addSr(const LoginSR.navigateToHome()); // Single Result for Navigation
+      },
     );
   }
 }
 ```
 
-### 2. Build your Screen
-
-Extend `BaseState` (or `BaseCubitState`) to handle the lifecycle and UI streams automatically.
+### 2. The UI Layer (`BaseStatelessScreen`)
+The high-performance way to build screens. No `StatefulWidget` needed unless you have local controllers.
 
 ```dart
-class MyScreen extends StatefulWidget {
-  const MyScreen({super.key});
+class LoginScreen extends BaseStatelessScreen<LoginState, LoginBloc, LoginSR> {
+  const LoginScreen({super.key});
 
   @override
-  State<MyScreen> createState() => _MyScreenState();
-}
-
-class _MyScreenState extends BaseState<MyState, MyBloc, MySR, MyScreen> {
-  @override
-  MyBloc createBloc() => MyBloc();
+  LoginBloc createBloc(BuildContext context) => getIt<LoginBloc>();
 
   @override
-  void onSR(BuildContext context, MySR sr) {
-    // Handle one-time events here (e.g. navigation)
+  void onSR(BuildContext context, LoginSR sr) {
+    if (sr is NavigateToHome) context.go('/home');
   }
 
   @override
-  void onFailure(BuildContext context, Failure failure) {
-    // Handle errors globally for this screen
-  }
-
-  @override
-  Widget buildWidget(BuildContext context) {
+  Widget buildScreen(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Modern Bloc')),
-      body: blocBuilder(
-        builder: (context, state) {
-          return Center(child: Text('State: $state'));
-        },
+      body: Center(
+        child: BlocSelector<LoginBloc, LoginState, String>(
+          selector: (state) => state.errorMessage,
+          builder: (context, error) => Text(error),
+        ),
       ),
     );
   }
 }
 ```
 
-### 3. Integrated Operations
+---
 
-Use `performOperation` inside your Bloc to automatically handle:
-*   **Progress**: Shows/hides `loader_overlay` automatically.
-*   **Errors**: Maps `DataResponse` errors to the `failureStream`.
-*   **Success**: Returns the unwrapped data to your success callback.
+## 🚀 Operation Orchestration
+The `OperationOrchestrator` mixin automates the repetitive task of handling `DataResponse` from the data layer:
 
-## 🔍 AppBlocObserver
-
-To track your application state transitions and Single Results, register the `AppBlocObserver`:
-
-```dart
-void main() {
-  Bloc.observer = AppBlocObserver();
-  runApp(const MyApp());
-}
-```
+1. **Shows Progress**: Triggers the global loading overlay.
+2. **Executes**: Runs your UseCase/Repository call.
+3. **Success**: Passes pure data to your `onSuccess` callback.
+4. **Failure**: Automatically maps errors to the `failureStream` for the UI to show a Toast/Snackbar.
+5. **Hides Progress**: Intelligently hides the loader, handling concurrent requests correctly.
 
 ---
 
-Built with ❤️ by Onix Flutter Team.
+## 🛠️ Best Practices
+
+- **Atomic Rebuilds**: Always use `BlocSelector` or `context.select` inside `buildScreen`. Avoid rebuilding the whole Scaffold.
+- **Single Results**: Use `addSr` for anything that isn't "State" (Navigation, Snacks, Dialogs).
+- **Pure Domain**: Ensure your UseCases return `DataResponse<T>` from `x_flutter_core` for seamless integration.
+
+---
+
+## 🤝 Contributing
+Built with ❤️ by **Fakhry Alnaffar** and the X team. 
+Feel free to open issues or pull requests to improve the ecosystem.
+
+## 📄 License
+This project is licensed under the Apache License 2.0.
+```

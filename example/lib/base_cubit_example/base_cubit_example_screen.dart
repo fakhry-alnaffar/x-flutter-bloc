@@ -1,9 +1,15 @@
 import 'package:example/base_cubit_example/cubit/base_cubit_example_screen_cubit.dart';
 import 'package:flutter/material.dart';
-import 'package:onix_flutter_bloc/onix_flutter_bloc.dart';
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get_it/get_it.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
-class BaseCubitExampleScreen extends StatefulWidget {
+class BaseCubitExampleScreen extends BaseStatelessScreen<
+    BaseCubitExampleScreenState,
+    BaseCubitExampleScreenCubit,
+    BaseCubitExampleScreenSR> {
   final String title;
 
   const BaseCubitExampleScreen({
@@ -12,99 +18,93 @@ class BaseCubitExampleScreen extends StatefulWidget {
   });
 
   @override
-  State<BaseCubitExampleScreen> createState() => _BaseCubitExampleScreenState();
-}
-
-class _BaseCubitExampleScreenState extends BaseCubitState<
-    BaseCubitExampleScreenState,
-    BaseCubitExampleScreenCubit,
-    BaseCubitExampleScreenSR,
-    BaseCubitExampleScreen> {
-  @override
-  BaseCubitExampleScreenCubit createCubit() => BaseCubitExampleScreenCubit();
+  BaseCubitExampleScreenCubit createBloc(BuildContext context) =>
+      GetIt.I.get<BaseCubitExampleScreenCubit>();
 
   @override
-  Widget buildWidget(BuildContext context) {
+  Widget buildScreen(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title, style: TextStyle(fontSize: 18.sp)),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
+            Text(
               'You have pushed the button this many times:',
+              style: TextStyle(fontSize: 14.sp),
             ),
-            blocBuilder(
-              builder: (context, state) {
+            20.verticalSpace,
+            // Atomic Rebuild: Using BlocSelector
+            BlocSelector<BaseCubitExampleScreenCubit,
+                BaseCubitExampleScreenState, int>(
+              selector: (state) => switch (state) {
+                BaseCubitExampleScreenData(:final counter) => counter,
+                _ => 0,
+              },
+              builder: (context, counter) {
                 return Text(
-                  '${state is BaseCubitExampleScreenData ? state.counter : 0}',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  '$counter',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(fontSize: 32.sp),
                 );
               },
             ),
           ],
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () => cubitOf(context).increment(),
-            tooltip: 'Increment',
-            child: const Icon(Icons.add),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: () => cubitOf(context)
-                .addSr(BaseCubitExampleScreenSRShowDialog('Hello')),
-            tooltip: 'Show dialog',
-            child: const Icon(Icons.message),
-          ),
-        ],
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 16.h, right: 16.w),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () => blocOf(context).increment(),
+              tooltip: 'Increment',
+              child: const Icon(Icons.add),
+            ),
+            16.horizontalSpace,
+            FloatingActionButton(
+              onPressed: () => blocOf(context)
+                  .addSr(BaseCubitExampleScreenSRShowDialog('Hello from SR')),
+              tooltip: 'Show dialog',
+              child: const Icon(Icons.message),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   @override
-  void onSR(
-    BuildContext context,
-    BaseCubitExampleScreenSR sr,
-  ) {
+  void onSR(BuildContext context, BaseCubitExampleScreenSR sr) {
     if (sr is BaseCubitExampleScreenSRShowDialog) {
       showDialog(
         context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Cubit dialog'),
-            content: Text(sr.message),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('Cubit dialog', style: TextStyle(fontSize: 18.sp)),
+          content: Text(sr.message, style: TextStyle(fontSize: 14.sp)),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
       );
     }
   }
 
   @override
-  void onFailure(
-    BuildContext context,
-    Failure failure,
-  ) {
-    debugPrint(failure.toString());
-  }
-
-  @override
-  void onProgress(
-    BuildContext context,
-    BaseProgressState progress,
-  ) {
-    debugPrint(progress.toString());
+  void onFailure(BuildContext context, Failure failure) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error: ${failure.toString()}')),
+    );
   }
 }

@@ -1,9 +1,15 @@
 import 'package:example/base_bloc_example/bloc/base_bloc_example_screen_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:onix_flutter_bloc/onix_flutter_bloc.dart';
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get_it/get_it.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
-class BaseBlocExampleScreen extends StatefulWidget {
+class BaseBlocExampleScreen extends BaseStatelessScreen<
+    BaseBlocExampleScreenState,
+    BaseBlocExampleScreenBloc,
+    BaseBlocExampleScreenSR> {
   final String title;
 
   const BaseBlocExampleScreen({
@@ -12,96 +18,97 @@ class BaseBlocExampleScreen extends StatefulWidget {
   });
 
   @override
-  State<BaseBlocExampleScreen> createState() => _BaseBlocExampleScreenState();
-}
-
-class _BaseBlocExampleScreenState extends BaseState<BaseBlocExampleScreenState,
-    BaseBlocExampleScreenBloc, BaseBlocExampleScreenSR, BaseBlocExampleScreen> {
-  @override
-  BaseBlocExampleScreenBloc createBloc() => BaseBlocExampleScreenBloc();
+  BaseBlocExampleScreenBloc createBloc(BuildContext context) =>
+      GetIt.I.get<BaseBlocExampleScreenBloc>();
 
   @override
-  void onSR(
-    BuildContext context,
-    BaseBlocExampleScreenSR sr,
-  ) {
-    if (sr is BaseBlocExampleScreenSRShowDialog) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Bloc dialog'),
-            content: Text(sr.message),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-  }
-
-  @override
-  void onFailure(
-    BuildContext context,
-    Failure failure,
-  ) {
-    debugPrint(failure.toString());
-  }
-
-  @override
-  void onProgress(
-    BuildContext context,
-    BaseProgressState progress,
-  ) {
-    debugPrint(progress.toString());
-  }
-
-  @override
-  Widget buildWidget(BuildContext context) {
+  Widget buildScreen(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(title, style: TextStyle(fontSize: 18.sp)),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
+            Text(
               'You have pushed the button this many times:',
+              style: TextStyle(fontSize: 14.sp),
             ),
-            blocBuilder(
-              builder: (context, state) {
+            20.verticalSpace,
+            // Atomic Rebuild: Using BlocSelector
+            BlocSelector<BaseBlocExampleScreenBloc, BaseBlocExampleScreenState,
+                int>(
+              selector: (state) => switch (state) {
+                BaseBlocExampleScreenData(:final counter) => counter,
+                _ => 0,
+              },
+              builder: (context, counter) {
                 return Text(
-                  '${state is BaseBlocExampleScreenData ? state.counter : 0}',
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  '$counter',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(fontSize: 32.sp, fontWeight: FontWeight.bold),
                 );
               },
             ),
           ],
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () =>
-                blocOf(context).add(BaseBlocExampleScreenEventOnIncrement()),
-            tooltip: 'Increment',
-            child: const Icon(Icons.add),
-          ),
-          const SizedBox(width: 16),
-          FloatingActionButton(
-            onPressed: () => blocOf(context)
-                .addSr(BaseBlocExampleScreenSRShowDialog('Hello')),
-            tooltip: 'Show dialog',
-            child: const Icon(Icons.message),
-          ),
-        ],
+      floatingActionButton: Padding(
+        padding: EdgeInsets.only(bottom: 16.h, right: 16.w),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            FloatingActionButton(
+              onPressed: () =>
+                  blocOf(context).add(BaseBlocExampleScreenEventOnIncrement()),
+              tooltip: 'Increment',
+              child: const Icon(Icons.add),
+            ),
+            16.horizontalSpace,
+            FloatingActionButton(
+              onPressed: () => blocOf(context)
+                  .addSr(BaseBlocExampleScreenSRShowDialog('Hello from SR')),
+              tooltip: 'Show dialog',
+              child: const Icon(Icons.message),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void onSR(BuildContext context, BaseBlocExampleScreenSR sr) {
+    if (sr is BaseBlocExampleScreenSRShowDialog) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+          title: Text('Bloc dialog', style: TextStyle(fontSize: 18.sp)),
+          content: Text(sr.message, style: TextStyle(fontSize: 14.sp)),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  @override
+  void onFailure(BuildContext context, Failure failure) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Error: ${failure.toString()}'),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

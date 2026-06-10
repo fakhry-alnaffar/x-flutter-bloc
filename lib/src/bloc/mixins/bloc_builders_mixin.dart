@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onix_flutter_bloc/src/bloc/bloc_typedefs.dart';
+import 'package:x_flutter_bloc/src/bloc/bloc_typedefs.dart';
 
-/// Mixin to provide standard Bloc builder widgets.
+/// A convenience mixin providing standardized access to Flutter BLoC builders.
+///
+/// Reduces boilerplate when using [BlocBuilder], [BlocSelector], etc.,
+/// by pre-binding the BLoC type [B] and State type [S].
 mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
-  /// A wrapper for [BlocConsumer].
+  /// A type-safe wrapper for [BlocConsumer].
   Widget blocConsumer({
-    required StateListener<S> builder,
+    required BlocWidgetBuilder<S> builder,
     required ListenDelegate<S> listener,
     BlocBuilderCondition<S>? buildWhen,
     BlocListenerCondition<S>? listenWhen,
   }) {
     return BlocConsumer<B, S>(
-      builder: (_, state) => builder(state),
+      builder: builder,
       listener: listener,
       buildWhen: buildWhen,
       listenWhen: listenWhen,
     );
   }
 
-  /// A wrapper for [BlocBuilder].
+  /// A type-safe wrapper for [BlocBuilder].
   Widget blocBuilder({
     required BlocWidgetBuilder<S> builder,
     BlocBuilderCondition<S>? buildWhen,
@@ -27,7 +30,7 @@ mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
     return BlocBuilder<B, S>(builder: builder, buildWhen: buildWhen);
   }
 
-  /// A wrapper for [BlocListener].
+  /// A type-safe wrapper for [BlocListener].
   Widget blocListener({
     required ListenDelegate<S> listener,
     Widget? child,
@@ -37,6 +40,20 @@ mixin class BlocBuildersMixin<B extends StateStreamable<S>, S, SR> {
       listener: listener,
       listenWhen: listenWhen,
       child: child,
+    );
+  }
+
+  /// A type-safe wrapper for [BlocSelector].
+  ///
+  /// Senior Tip: Use this for high-performance UI components that only
+  /// care about a specific field of the state.
+  Widget blocSelector<T>({
+    required BlocWidgetSelector<S, T> selector,
+    required BlocWidgetBuilder<T> builder,
+  }) {
+    return BlocSelector<B, S, T>(
+      selector: selector,
+      builder: builder,
     );
   }
 }

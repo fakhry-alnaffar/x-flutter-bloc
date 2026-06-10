@@ -1,18 +1,21 @@
 import 'dart:async';
 
-import 'package:onix_flutter_core_models/onix_flutter_core_models.dart';
+import 'package:flutter/foundation.dart';
+import 'package:x_flutter_bloc/x_flutter_bloc.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
 /// Mixin to add progress tracking capabilities to a BLoC or Cubit.
 ///
 /// Supports reference counting to prevent premature hiding of the progress
 /// indicator when multiple operations are running concurrently.
-mixin class ProgressStreamMixin {
+mixin class ProgressStreamMixin implements ProgressStreamProvider {
   final StreamController<BaseProgressState> _progressStreamController =
-      StreamController<BaseProgressState>.broadcast();
+      StreamController<BaseProgressState>.broadcast(sync: true);
 
   int _progressCount = 0;
 
   /// Stream of progress states.
+  @override
   Stream<BaseProgressState> get progressStream =>
       _progressStreamController.stream;
 
@@ -50,6 +53,7 @@ mixin class ProgressStreamMixin {
   }
 
   /// Closes the progress stream controller.
+  @protected
   void closeProgressStream() {
     if (!_progressStreamController.isClosed) {
       _progressStreamController.close();
