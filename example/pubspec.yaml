@@ -27,9 +27,9 @@ dependencies:
   x_flutter_core: ^1.0.1
 
 dependency_overrides:
-  x_flutter_core_models: ^0.1.4
+  x_flutter_core_models: ^1.0.0
 
-  x_flutter_core: ^1.0.1
+  x_flutter_core: ^1.0.2
 
 
 dev_dependencies:

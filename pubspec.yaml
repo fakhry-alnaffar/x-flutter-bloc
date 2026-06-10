@@ -1,6 +1,6 @@
 name: x_flutter_bloc
 description: X Flutter Bloc — a modern, production-ready state management framework built on flutter_bloc with seamless integration into the X Flutter Core ecosystem.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/fakhry-alnaffar/x-flutter-bloc
 issue_tracker: https://github.com/fakhry-alnaffar/x-flutter-bloc/issues
 
@@ -24,8 +24,8 @@ dependencies:
   flutter_screenutil: ^5.9.3
   equatable: ^2.0.8
 
-  x_flutter_core_models: ^0.1.4
-  x_flutter_core: ^1.0.1
+  x_flutter_core_models: ^1.0.0
+  x_flutter_core: ^1.0.2
 
 dev_dependencies:
   flutter_test:

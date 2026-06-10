@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:x_flutter_bloc/x_flutter_bloc.dart';
 import 'package:x_flutter_core/x_flutter_core.dart';
-import 'package:x_flutter_core_models/x_flutter_core_models.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart' hide DataResponse, DataResponseSuccess;
 
 class _Sut with ProgressStreamMixin, FailureStreamMixin, OperationOrchestrator {
   void dispose() {

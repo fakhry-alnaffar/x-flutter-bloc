@@ -1,3 +1,9 @@
+## 1.0.1
+
+* **Fix:** Resolved ambiguous import errors for `DataResponse` and `DataResponseSuccess` in `OperationOrchestrator`.
+* **Refactor:** Optimized library exports and imports to prevent conflicts between `x_flutter_core` and `x_flutter_core_models`.
+* Improved compatibility with the latest `x_flutter_core` updates.
+
 ## 1.0.0
 
 * **Initial Production Release**

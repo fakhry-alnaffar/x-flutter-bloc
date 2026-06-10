@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:x_flutter_bloc/src/bloc/mixins/failure_stream_mixin.dart';
 import 'package:x_flutter_bloc/src/bloc/mixins/progress_stream_mixin.dart';
 import 'package:x_flutter_core/x_flutter_core.dart';
-import 'package:x_flutter_core_models/x_flutter_core_models.dart';
+import 'package:x_flutter_core_models/x_flutter_core_models.dart' hide DataResponse, DataResponseSuccess;
 
 /// Mixin that orchestrates async operations with progress and failure handling.
 ///

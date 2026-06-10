@@ -971,23 +971,23 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "1.0.0"
+    version: "1.0.1"
   x_flutter_core:
     dependency: "direct main"
     description:
       name: x_flutter_core
-      sha256: "6d56fd7250657ba75b8d03057de7ae67ef747ee972fc98c9f49bf8957402fc71"
+      sha256: afa5f03a30e58529ea519c3dff1aa5d8ea46f124e0e1066d161218e4dafe03c7
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   x_flutter_core_models:
     dependency: "direct main"
     description:
       name: x_flutter_core_models
-      sha256: "4648e0d32a51396216338b9c180ab529fdf5c61255749921323e53ec665957e4"
+      sha256: "943c04ce2087dc431364f6035def3d8e602cd22367ac31328994d5daddf75ce0"
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.4"
+    version: "1.0.0"
   xdg_directories:
     dependency: transitive
     description:
