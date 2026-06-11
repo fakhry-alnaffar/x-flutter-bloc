@@ -24,16 +24,21 @@ mixin SingleResultMixin<State, SR> on BlocBase<State>
     if (!_srController.isClosed) _srController.add(sr);
   }
 
-  /// Closes the single result stream controller.
-  ///
-  /// Called explicitly by [BaseBloc.close] / [BaseCubit.close].
-  /// Do NOT override [BlocBase.close] here — [BaseBloc] and [BaseCubit]
-  /// own the teardown sequence to avoid a double-close via mixin linearisation.
+  /// Closes the single result stream controller. Idempotent.
   @protected
   void closeSingleResultStream() {
     if (!_srController.isClosed) {
       _srController.close();
     }
+  }
+
+  /// Ensures the SR stream is closed when any [BlocBase] subclass is closed,
+  /// including bare [Cubit] subclasses that don't extend [BaseBloc]/[BaseCubit].
+  /// Safe when called multiple times — [closeSingleResultStream] is idempotent.
+  @override
+  Future<void> close() {
+    closeSingleResultStream();
+    return super.close();
   }
 }
 

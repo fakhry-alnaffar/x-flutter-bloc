@@ -73,6 +73,7 @@ mixin OperationOrchestrator on ProgressStreamMixin, FailureStreamMixin {
   @protected
   Failure mapResponseToFailure<T>(DataResponse<T> response) {
     return switch (response) {
+      DataResponseFailure<T>(failure: final failure) => failure,
       ApiError<T>(error: final error, statusCode: final code) =>
         ApiResponseFailure(statusCode: code ?? 0, message: error.toString()),
       NoInternetConnection<T>() => const ConnectionFailure(),
