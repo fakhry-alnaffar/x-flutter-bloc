@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:x_flutter_bloc/x_flutter_bloc.dart';
-import 'package:x_flutter_core/x_flutter_core.dart';
 
 class _Sut with ProgressStreamMixin, FailureStreamMixin, OperationOrchestrator {
   void dispose() {

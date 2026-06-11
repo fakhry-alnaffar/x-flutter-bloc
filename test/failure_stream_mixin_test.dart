@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:x_flutter_bloc/x_flutter_bloc.dart';
-import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
 class _Sut with FailureStreamMixin {
   void dispose() => closeFailureStream();

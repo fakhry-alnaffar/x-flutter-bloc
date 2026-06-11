@@ -1,4 +1,26 @@
+/// x_flutter_bloc — production-ready state management framework for Flutter.
+///
+/// This is the primary entry point for bloc-based apps in the x_flutter
+/// ecosystem. A single import gives you:
+///
+/// **From x_flutter_core (re-exported):**
+/// - [DataResponse] — sealed transport result (7 variants)
+/// - [Failure], [ApiFailure] subtypes — domain failure hierarchy
+/// - [BaseProgressState], [DefaultProgressState] — loading state
+/// - [ServerErrorMapper], [RequestProcessor], [ApiClient], storage, etc.
+///
+/// **From x_flutter_bloc:**
+/// - [BaseBloc] / [BaseCubit] — base state manager classes
+/// - [BaseBlocState] / [BaseCubitState] — stateful widget integration
+/// - [BaseStatelessScreen] — declarative screen template
+/// - [OperationOrchestrator] — automatic progress + failure handling
+/// - [SingleResultMixin] — one-time events (navigation, toasts)
+/// - [StreamListener] — reactive stream-to-widget bridge
+/// - [AppBlocObserver] — debug logging BlocObserver
 library;
+
+// Re-export the full x_flutter_core API so consumers need only this one import.
+export 'package:x_flutter_core/x_flutter_core.dart';
 
 // BLoC & Cubit
 export 'src/bloc/base_bloc/base_bloc.dart' show BaseBloc;

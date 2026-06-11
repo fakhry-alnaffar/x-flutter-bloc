@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:x_flutter_bloc/x_flutter_bloc.dart';
-import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
 /// The ultimate Stateless UI template for Enterprise Flutter Apps.
 ///
