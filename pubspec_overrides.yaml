@@ -1,0 +1,5 @@
+dependency_overrides:
+  x_flutter_core_models:
+    path: ../x-flutter-core-models
+  x_flutter_core:
+    path: ../x-flutter-core
