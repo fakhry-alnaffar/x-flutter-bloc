@@ -24,8 +24,16 @@ dependencies:
   flutter_screenutil: ^5.9.3
   equatable: ^2.0.8
 
-  x_flutter_core_models: ^1.0.0
-  x_flutter_core: ^1.0.2
+  x_flutter_core:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core.git
+      ref: main
+
+  x_flutter_core_models:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core-models.git
+      ref: main
+
 
 dev_dependencies:
   flutter_test:

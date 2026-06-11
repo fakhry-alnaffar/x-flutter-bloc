@@ -22,14 +22,28 @@ dependencies:
   x_flutter_bloc:
     path: ../
   loader_overlay: ^5.0.0
-  x_flutter_core_models: ^0.1.4
+  x_flutter_core:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core.git
+      ref: main
 
-  x_flutter_core: ^1.0.1
+  x_flutter_core_models:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core-models.git
+      ref: main
+
 
 dependency_overrides:
-  x_flutter_core_models: ^1.0.0
+  x_flutter_core:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core.git
+      ref: main
 
-  x_flutter_core: ^1.0.2
+  x_flutter_core_models:
+    git:
+      url: https://github.com/fakhry-alnaffar/x-flutter-core-models.git
+      ref: main
+
 
 
 dev_dependencies:
