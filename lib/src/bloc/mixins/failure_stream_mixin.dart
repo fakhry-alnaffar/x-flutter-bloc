@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:x_flutter_bloc/x_flutter_bloc.dart';
+import 'package:x_flutter_bloc/src/bloc/bloc_typedefs.dart';
 import 'package:x_flutter_core_models/x_flutter_core_models.dart';
 
 /// Mixin to add failure reporting capabilities to a BLoC or Cubit.
